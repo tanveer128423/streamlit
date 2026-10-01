@@ -764,6 +764,35 @@ def test_multiselect():
     repr(sr.multiselect[0])
 
 
+def test_multiselect_preserves_selection_when_options_are_reordered():
+    script = AppTest.from_string(
+        """
+        import streamlit as st
+
+        if "reverse" not in st.session_state:
+            st.session_state.reverse = False
+
+        if st.button("Reverse"):
+            st.session_state.reverse = not st.session_state.reverse
+
+        options = ["a", "b", "c"]
+        if st.session_state.reverse:
+            options.reverse()
+
+        st.multiselect("Select", options)
+        """,
+    )
+
+    sr = script.run()
+
+    sr = sr.multiselect[0].select("b").run()
+    assert sr.multiselect[0].value == ["b"]
+
+    sr = sr.button[0].click().run()
+
+    assert sr.multiselect[0].value == ["b"]
+
+
 def test_number_input():
     script = AppTest.from_string(
         """
